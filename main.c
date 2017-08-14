@@ -43,6 +43,7 @@ void cpu_init(void)
 	
 	// and set prescaler to 0 -> full 8MHz of raw speed :)
 	CLKPSR = 0;
+	OSCCAL = 145;
 
 	// 1 - PB0 (PCINT0/TPIDATA/OC0A/ADC0/AIN0)				INPUT, SOUND SERIAL DATA		INPUT, SOUND SERIAL DATA
 	// 2 - GND												
