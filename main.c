@@ -5,13 +5,6 @@
  * Author : terminal
  */ 
 
-// 1 - PB0 (PCINT0/TPIDATA/OC0A/ADC0/AIN0)
-// 2 - GND
-// 3 - PB1 (PCINT1/TPICLK/CLKI/ICP0/OC0B/ADC1/AIN1)
-// 4 - PB2 (T0/CLKO/PCINT2/INT0/ADC2)
-// 5 - VCC
-// 6 - PB3 (RESET/PCINT3/ADC3)
-
 #define F_CPU 8000000UL
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -57,13 +50,26 @@ void cpu_init(void)
 	
 	// and set prescaler to 0 -> full 8MHz of raw speed :)
 	CLKPSR = 0;
+
+	// 1 - PB0 (PCINT0/TPIDATA/OC0A/ADC0/AIN0)				INPUT, SOUND SERIAL DATA		INPUT, SOUND SERIAL DATA
+	// 2 - GND												
+	// 3 - PB1 (PCINT1/TPICLK/CLKI/ICP0/OC0B/ADC1/AIN1)		INPUT, SOUND SERIAL CLOCK		OUTPUT, SPEAKER
+	// 4 - PB2 (T0/CLKO/PCINT2/INT0/ADC2)					OUTPUT, SPEAKER					INPUT, SOUND SERIAL CLOCK
+	// 5 - VCC
+	// 6 - PB3 (RESET/PCINT3/ADC3)							INPUT, RESET
 	
-	// PB0 - input, serial data
-	// PB1 - input, serial clock
-	// PB2 - output, speaker
-	// PB3 - input, reset/unused
-	DDRB = 0b00000100;
-	PORTB = 0; // turn of output transistor
+	//
+	// RESET
+	//	PB3		vcc		PB2
+	//	6		5		4
+	//	
+	//	1		2		3
+	//	PB0		gnd		PB1
+	
+	DDRB = 0b00000010;
+	PORTB = 0b0000000; // turn off output transistor
+	PUEB = 0b00000000; // setup pullups
+
 	
 	// configure INT0 to rising edge
 	EICRA = 0b00000011;
@@ -96,6 +102,5 @@ ISR(INT0_vect)
 
 ISR(TIM0_COMPA_vect)
 {
-	PINB |= 0b00000100;
+	PINB |= _BV(PINB1);
 }
-
