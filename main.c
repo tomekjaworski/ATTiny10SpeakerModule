@@ -22,13 +22,6 @@ uint8_t shadow_sound_register_shift_counter;
 int main(void)
 {
 	cpu_init();
-
-	TCCR0A = 0;
-	TCCR0B = (1<<1)|(1 << WGM02);
-	OCR0A = 20;
-	TIMSK0 |= (1<<OCIE0A);
-	
-	sei();
     
 	while(1)
 	{
@@ -70,6 +63,10 @@ void cpu_init(void)
 	PORTB = 0b0000000; // turn off output transistor
 	PUEB = 0b00000000; // setup pullups
 
+	// init timer
+	TCCR0A = 0;
+	TCCR0B = (1<<CS01)|(1 << WGM02); // CTC (Clear Timer on Compare)
+	OCR0A = 800;
 	
 	// configure INT0 to rising edge
 	EICRA = 0b00000011;
@@ -82,7 +79,7 @@ void cpu_init(void)
 	shadow_sound_register_shift_counter = 0;
 	
 	// start interrupts
-	//sei();
+	sei();
 }
 
 // interrupt on INT0 on rising edge
@@ -95,8 +92,9 @@ ISR(INT0_vect)
 
 	if (shadow_sound_register_shift_counter >= 16)
 	{
+		sound_register = shadow_sound_register;
 		shadow_sound_register_shift_counter = 0;
-		sound_register = shadow_sound_register_shift_counter;
+		OCR0A = sound_register;
 	}
 }
 
