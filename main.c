@@ -114,6 +114,7 @@ ISR(INT0_vect)
 		}
 		
 		OCR0A = sound_register;
+		TCNT0 = 0x0000;
 		TIMER_ISR_ENABLE;
 	}
 	
