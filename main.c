@@ -2,7 +2,7 @@
  * ATTiny10SpeakerModule.c
  *
  * Created: 31.07.2017 11:14:31
- * Author : terminal
+ * Author : Tomasz Jaworski
  */ 
 
 #define F_CPU 8000000UL
