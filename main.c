@@ -15,9 +15,10 @@ void cpu_init(void);
 
 // ------------------------------------------------------------
 
-uint16_t sound_register;
-uint16_t shadow_sound_register;
-uint8_t shadow_sound_register_shift_counter;
+volatile uint16_t sound_register;
+volatile uint16_t shadow_sound_register;
+volatile uint8_t shadow_sound_register_shift_counter;
+volatile uint8_t idle_counter;
 
 #define TIMER_ISR_ENABLE	TIMSK0 |= (1<<OCIE0A);
 #define TIMER_ISR_DISABLE	TIMSK0 = 0x00;
@@ -28,12 +29,16 @@ int main(void)
     
 	while(1)
 	{
-		asm("nop");
-		asm("nop");
-		asm("nop");
-		asm("nop");
-		asm("nop");
-		asm("nop");
+		// wait approx. 100us
+		for (int i = 0; i < 159; i++)
+			asm("nop");
+
+		// try to resynchronize			
+		if (idle_counter++ > 10)
+		{
+			idle_counter = 0;
+			shadow_sound_register_shift_counter = 0;
+		}
 		
 	}
 	
@@ -92,6 +97,7 @@ ISR(INT0_vect)
 	shadow_sound_register |= PINB & 0b00000001;
 	shadow_sound_register <<= 1;
 	shadow_sound_register_shift_counter++;
+	idle_counter = 0;
 
 	if (shadow_sound_register_shift_counter >= 16)
 	{
