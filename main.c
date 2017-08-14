@@ -19,6 +19,9 @@ uint16_t sound_register;
 uint16_t shadow_sound_register;
 uint8_t shadow_sound_register_shift_counter;
 
+#define TIMER_ISR_ENABLE	TIMSK0 |= (1<<OCIE0A);
+#define TIMER_ISR_DISABLE	TIMSK0 = 0x00;
+
 int main(void)
 {
 	cpu_init();
@@ -68,12 +71,11 @@ void cpu_init(void)
 	TCCR0A = 0;
 	TCCR0B = (1<<CS01)|(1 << WGM02); // CTC (Clear Timer on Compare)
 	OCR0A = 800;
+	TIMER_ISR_DISABLE;
 	
 	// configure INT0 to rising edge
 	EICRA = 0b00000011;
 	EIMSK = 0b00000001;
-	
-	
 	
 	sound_register = 0;
 	shadow_sound_register = 0;
@@ -95,8 +97,20 @@ ISR(INT0_vect)
 	{
 		sound_register = shadow_sound_register;
 		shadow_sound_register_shift_counter = 0;
+		
+		// turn off sound?
+		if (sound_register == 0)
+		{
+			// turn off timer's interrupt and transistor
+			TIMER_ISR_DISABLE;
+			PORTB &= ~_BV(PORTB1);
+			return;
+		}
+		
 		OCR0A = sound_register;
+		TIMER_ISR_ENABLE;
 	}
+	
 }
 
 ISR(TIM0_COMPA_vect)
