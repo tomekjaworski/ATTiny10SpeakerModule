@@ -1,3 +1,10 @@
+/*
+ * ATTiny Sound Generator Test sketch for Arduino Due
+ *
+ * Created: 31.07.2017 11:14:31
+ * Author : Tomasz Jaworski
+ */ 
+
 #define SOUND_CLOCK  2
 #define SOUND_DATA 3
 
