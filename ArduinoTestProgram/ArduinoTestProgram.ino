@@ -5,8 +5,8 @@
  * Author : Tomasz Jaworski
  */ 
 
-#define SOUND_CLOCK  2
-#define SOUND_DATA 3
+#define SOUND_CLOCK  12
+#define SOUND_DATA 13
 
 void soundInit(void)
 {
@@ -15,6 +15,11 @@ void soundInit(void)
 
   digitalWrite(SOUND_CLOCK, 0);
   digitalWrite(SOUND_DATA, 0);
+
+REG_PIOB_OER = 0x90000000;
+REG_PIOB_PER = 0x90000000;
+
+  
   delay(1);
 
 }
@@ -48,16 +53,25 @@ void sound(int16_t freq)
    */
 
   uint16_t value = 250000L / freq;
-  
 
+  
   for (int i = 0; i < 16; i++)
   {
+
     digitalWrite(SOUND_DATA, value & 0x8000);
+    if (value&0x8000)
+      REG_PIOB_SODR = 0x10000000;
+    else
+      REG_PIOB_CODR = 0x10000000;
+    
     value <<= 1;
 
     // pulse the data
     digitalWrite(SOUND_CLOCK, 1);
+    REG_PIOB_SODR = 0x80000000;
+
     delayMicroseconds(100);
+    REG_PIOB_CODR = 0x80000000;
     digitalWrite(SOUND_CLOCK, 0);
   }
 }
